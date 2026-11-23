@@ -8,154 +8,37 @@
 <meta property="og:title" content="heir · the dev goes quiet, the holders inherit">
 <meta property="og:description" content="a dead dev switch for pump.fun coins. check in every 72h or the fees pass to the top 50 holders, forever.">
 <meta property="og:image" content="https://heirsol.vercel.app/og.jpg">
+<meta property="og:url" content="https://heirsol.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#09090a">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/hd9.woff" as="font" type="font/woff" crossorigin>
-<link rel="preload" href="/assets/fonts/hd7.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/fonts/mo7.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="/assets/css/heir.css">
+<link rel="stylesheet" href="/assets/css/gate.css">
 </head>
-<body>
-<div class="grid-bg" aria-hidden="true"></div>
-<nav class="top"><div class="wrap">
- <a class="logo" href="/"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#e8c15a"/><path d="M12 34h11l2.4 3.6 3.2-19 4 25.4 2.8-10H52" fill="none" stroke="#3f2d06" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg>heir</a>
- <div class="links"><a href="#why">why</a><a href="#how">how it works</a><a href="#split">your cut</a><a href="#terminal">terminal</a><a href="#rules">rules</a><a href="#chain">on-chain</a><a href="#coins">coins</a><a href="#faq">faq</a></div>
- <div class="navr" style="display:flex;gap:8px"><a class="btn sm hide-sm" href="/docs">docs</a><a class="btn gold sm" href="/app">open the app</a></div>
- <i class="prog"></i>
-</div></nav>
-
-<main>
-<header class="hero" id="top"><div class="wrap">
- <div>
-  <span class="badge"><i class="dot"></i>a dead dev switch for pump.fun coins</span>
-  <h1>the dev goes quiet.<br><span>the holders inherit.</span></h1>
-  <p>add your coin to heir and check in <b>once every 72 hours</b> with one signature. miss one and the switch fires: the coin's creator fees pass to its <b>top 50 holders</b>, split by bag, forever.</p>
-  <div class="acts"><a class="btn gold" href="/app#add">add your coin</a><a class="btn" href="#how">how it works</a></div>
-  <div class="stats">
-   <div><div class="k">SOL</div><div class="v" data-sol>—</div></div>
-   <div><div class="k">coins on heir</div><div class="v" id="s-coins">—</div></div>
-   <div><div class="k">alive</div><div class="v" id="s-alive">—</div></div>
-   <div><div class="k">switches fired</div><div class="v gold" id="s-fired">—</div></div>
-  </div>
+<body class="gate">
+<canvas id="gatecv" aria-hidden="true"></canvas>
+<div class="scan" aria-hidden="true"></div>
+<header class="gbar">
+ <a class="logo" href="/"><svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#e8c15a"/><path d="M12 34h11l2.4 3.6 3.2-19 4 25.4 2.8-10H52" fill="none" stroke="#3f2d06" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg>heir</a>
+ <span class="gmono hide-sm">heir://switch</span>
+ <nav class="glinks"><a href="/home">home</a><a href="/app">app</a><a href="/docs">docs</a></nav>
+</header>
+<main class="gmain">
+ <div class="gtimer gmono" id="gtimer" aria-hidden="true">switch in <b>72:00:00</b></div>
+ <div class="gcopy" id="gcopy">
+  <h1 class="gword">heir</h1>
+  <p class="gtag">the dev goes quiet. <span>the holders inherit.</span></p>
+  <p class="gsub">a dead dev switch for pump.fun coins. check in every 72 hours, or the creator fees pass to the top 50 holders, forever.</p>
+  <div class="gacts"><a class="btn gold" href="/home" id="enter">enter</a><a class="btn" href="/app">open the app</a></div>
  </div>
- <div class="win reveal" id="monwin">
-  <div class="bar"><i></i><i></i><i></i><span style="margin-left:14px">heir://switch.exe</span><span class="r">drag the time →</span></div>
-  <canvas id="mon" aria-label="the switch: a dev's pulse, and what happens when it stops"></canvas>
-  <div class="scrub"><span>hours since the last check-in</span><input type="range" id="hrs" min="0" max="96" step="0.1" value="0" aria-label="hours since the last check-in"><b id="hrsv" style="color:var(--t);min-width:42px;text-align:right">0h</b></div>
-  <div class="cells">
-   <div><div class="k">last check-in</div><div class="v" id="m-last">just now</div></div>
-   <div><div class="k">switch in</div><div class="v" id="m-in">72:00:00</div></div>
-   <div><div class="k">the vault pays</div><div class="v" id="m-pays">the dev</div></div>
-   <div><div class="k">state</div><div class="v" id="m-state">alive</div></div>
-  </div>
- </div>
-</div></header>
-
-<div class="tape" aria-hidden="true"><div class="run" id="tape"></div></div>
-
-<section id="why"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">why</div><h2>a dead coin still pays its dev.</h2></div>
- <p class="side">every trade on a pump.fun coin pays a <b>creator fee</b>. when the dev walks away, the coin keeps trading and the fees keep landing in a wallet nobody watches. the holders who stayed get <b>nothing</b>.</p></div>
- <div class="three">
-  <div class="card reveal"><div class="n">01</div><svg width="100%" height="44" viewBox="0 0 300 44" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26h70l6 8 7-30 8 38 5-16h40l6 6 5-18 6 24 4-10h40l5 4 4-8 4 10 3-5H300" fill="none" stroke="#b9b2a2" stroke-width="2" stroke-linejoin="round"/></svg><h3>the dev walks</h3><p>no posts, no updates, no moves from the dev wallet. the chart is all that's left.</p></div>
-  <div class="card reveal"><div class="n">02</div><svg width="100%" height="44" viewBox="0 0 300 44" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22H300" stroke="#57534a" stroke-width="2"/><g fill="#e8c15a"><circle cx="40" cy="22" r="4"/><circle cx="110" cy="22" r="4"/><circle cx="180" cy="22" r="4"/><circle cx="250" cy="22" r="4"/></g></svg><h3>the fees keep coming</h3><p>the coin still trades. every buy and every sell still pays the creator fee, to a wallet that never moves.</p></div>
-  <div class="card reveal"><div class="n">03</div><svg width="100%" height="44" viewBox="0 0 300 44" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22h150" stroke="#e8c15a" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/><g stroke="#e8c15a" stroke-width="1.2" fill="none" opacity=".6"><path d="M150 22C190 22 210 4 296 4"/><path d="M150 22C190 22 210 14 296 14"/><path d="M150 22H296"/><path d="M150 22C190 22 210 30 296 30"/><path d="M150 22C190 22 210 40 296 40"/></g><circle cx="150" cy="22" r="5" fill="#e8c15a"/></svg><h3>heir hands them over</h3><p>one missed check-in and the fees go to the 50 wallets that kept holding. no vote, no admin, no second chance.</p></div>
- </div>
-</div></section>
-
-<section id="how" style="padding-top:0"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">how it works</div><h2>four steps. one of them comes back every 72 hours.</h2></div>
- <p class="side">heir has no token and no contract of its own to trust. it's <b>notes on Solana</b> and a <b>vault per coin</b>, and every move shows on Solscan.</p></div>
- <div class="how">
-  <div class="pin"><div class="win"><div class="bar"><i></i><i></i><i></i><span style="margin-left:14px">heir://steps.exe</span><span class="r" id="howc">01 / 04</span></div><canvas id="howcv" aria-hidden="true"></canvas></div></div>
-  <div class="steps">
-   <div class="st on" data-s="0"><span class="n">01</span><h3>add your coin</h3><p>paste your pump.fun contract address in the app and connect the wallet that created it. heir reads the creator straight from the coin's bonding curve, so <b>only the real dev can add it</b>. you sign one note: <code>heir:1:register</code>.</p></div>
-   <div class="st" data-s="1"><span class="n">02</span><h3>route the fees</h3><p>heir gives your coin <b>its own vault address</b>. on pump.fun, send your creator fees there. while you're around, the vault pays it all straight back to you.</p></div>
-   <div class="st" data-s="2"><span class="n">03</span><h3>check in</h3><p>once every 72 hours, sign <code>heir:1:checkin</code> from the dev wallet. it's a note on Solana: <b>one signature</b> plus the network fee. the timer goes back to 72:00:00.</p></div>
-   <div class="st" data-s="3"><span class="n">04</span><h3>miss one</h3><p>72 hours with no check-in and the switch fires, <b>for good</b>. from then on the vault pays the top 50 holders by bag, every time fees come in. late check-ins don't count.</p></div>
-  </div>
- </div>
-</div></section>
-
-<section id="split" style="padding-top:0"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">your cut</div><h2>what the switch pays you.</h2></div>
- <p class="side">after it fires, each payout splits the vault <b>by bag among the top 50 wallets</b>. pools, program accounts, the dev and the vault never count.</p></div>
- <div class="win reveal" style="margin-top:54px">
-  <div class="bar"><i></i><i></i><i></i><span style="margin-left:14px">heir://split.exe</span><span class="r">the real formula</span></div>
-  <div class="calc">
-   <div class="in">
-    <label>SOL in the vault <b id="c-vv">◎ 10</b><input type="range" class="gold" id="c-v" min="0" max="1000" value="500"></label>
-    <label>your bag, % of supply <b id="c-bv">0.50%</b><input type="range" id="c-b" min="1" max="1000" value="50"></label>
-    <label>what the top 50 hold together <b id="c-tv">40%</b><input type="range" id="c-t" min="5" max="95" value="40"></label>
-   </div>
-   <div class="out">
-    <div><div class="k">your cut, this payout</div><div class="big" id="c-out">—</div></div>
-    <div class="bars"><div><span>of the payout</span><s><i id="c-b1"></i></s><b id="c-p1">1.25%</b></div><div><span>of the supply</span><s><i id="c-b2"></i></s><b id="c-p2">0.50%</b></div></div>
-    <div class="note" id="c-note">payable = vault − ◎0.001 kept for rent. your cut = payable × your bag ÷ what the top 50 hold.</div>
-   </div>
-  </div>
- </div>
-</div></section>
-
-<section id="terminal" style="padding-top:0"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">terminal</div><h2>drive it from the keyboard.</h2></div>
- <p class="side">everything here also works as commands. type <b>help</b>, or press <kbd>/</kbd> anywhere to open the terminal in the corner.</p></div>
- <div class="reveal" id="hometerm" style="margin-top:54px"></div>
-</div></section>
-
-<section id="rules" style="padding-top:0"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">the rules</div><h2>numbers, not promises.</h2></div>
- <p class="side">the same rules for every coin. they live in the code, and the code is in the repo.</p></div>
- <div class="win reveal" style="margin-top:54px"><div class="bar"><i></i><i></i><i></i><span style="margin-left:14px">heir://rules.db</span></div>
-  <table class="tbl"><thead><tr><th>rule</th><th>value</th><th class="hide-sm">why</th></tr></thead><tbody>
-   <tr><td>check-in window</td><td class="g"><b style="color:var(--g)">72 hours</b></td><td class="hide-sm">long enough for a weekend, short enough that a gone dev is caught fast</td></tr>
-   <tr><td>a check-in costs</td><td><b>one signature</b></td><td class="hide-sm">a memo note on Solana plus the network fee. no SOL goes to heir</td></tr>
-   <tr><td>who can check in</td><td><b>the dev wallet</b></td><td class="hide-sm">the creator named in the coin's bonding curve, nobody else</td></tr>
-   <tr><td>heirs</td><td><b>top 50 wallets</b></td><td class="hide-sm">by bag, read live from the chain at every payout</td></tr>
-   <tr><td>never inherit</td><td><b>pools · programs · dev · vault</b></td><td class="hide-sm">program-owned accounts are off-curve and get skipped</td></tr>
-   <tr><td>split</td><td><b>by bag</b></td><td class="hide-sm">among the 50, so a bigger bag gets a bigger cut</td></tr>
-   <tr><td>smallest cut</td><td><b>◎ 0.001</b></td><td class="hide-sm">smaller cuts drop and their share goes back to the rest</td></tr>
-   <tr><td>payout runs</td><td><b>on demand + daily</b></td><td class="hide-sm">anyone can press run payout, and heir sweeps every fired vault once a day</td></tr>
-   <tr><td>after it fires</td><td class="g"><b style="color:var(--g)">forever</b></td><td class="hide-sm">late check-ins don't count. there's no undo</td></tr>
-  </tbody></table></div>
-</div></section>
-
-<section id="chain" style="padding-top:0"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">on-chain</div><h2>the chain is the database.</h2></div>
- <p class="side">heir keeps no list of its own. every coin, every check-in and every payout is a transaction anyone can read and rebuild.</p></div>
- <div class="chain">
-  <div class="card reveal"><div class="n">your wallet</div><h3>signs the notes</h3><p>registering and checking in are memo notes from the dev wallet, sent with a 0-SOL transfer to the heir tag address so they're easy to find.</p><code>heir:1:register:&lt;mint&gt;<br>heir:1:checkin:&lt;mint&gt;</code></div>
-  <div class="card reveal"><div class="n">a vault per coin</div><h3>holds the fees</h3><p>each coin gets its own vault. its key is derived on heir's server and never leaves it. the code sends a vault's SOL to one of two places only: the dev while alive, the top 50 after.</p><code>vault = derive(secret, mint)</code></div>
-  <div class="card reveal"><div class="n">the tag address</div><h3>indexes everything</h3><p>open it on Solscan and you're looking at heir's whole registry: every coin added, every check-in, in order.</p><code id="tagaddr">—</code></div>
- </div>
-</div></section>
-
-<section id="coins" style="padding-top:0"><div class="wrap">
- <div class="split reveal"><div><div class="eyebrow">coins</div><h2>every coin on heir.</h2></div>
- <p class="side">live from the chain. <b>alive</b> means the dev checked in within 72 hours. <b class="gold">fired</b> means the holders own the fees now.</p></div>
- <div class="coins" id="coinlist"><div class="card" style="grid-column:1/-1"><div class="empty" style="padding:10px">reading the chain…</div></div></div>
- <div style="margin-top:22px;display:flex;gap:10px"><a class="btn" href="/app">open the board</a><a class="btn gold" href="/app#add">add your coin</a></div>
-</div></section>
-
-<section id="faq" style="padding-top:0"><div class="wrap faqg">
- <div class="reveal"><div class="eyebrow">faq</div><h2>questions.</h2><p class="lead" style="margin-top:18px;font-size:16px">the short answers. the <a href="/docs" style="color:var(--g)">docs</a> walk through every rule and every transaction.</p></div>
- <div class="faq">
-  <details class="reveal"><summary>does heir need its own token?</summary><p>no. heir works on any pump.fun coin. the only money that moves is your coin's creator fees, from its vault to the dev or to the heirs.</p></details>
-  <details class="reveal"><summary>who holds the vault keys?</summary><p>each vault's key is derived on heir's server from one secret, and it never leaves the server. the code can send a vault's SOL to exactly two places: the dev while the coin is alive, or its top 50 holders after the switch fires.</p></details>
-  <details class="reveal"><summary>what counts as a check-in?</summary><p>a transaction from the dev wallet carrying the note <span class="mono gold">heir:1:checkin:&lt;mint&gt;</span>. the app builds it for you. one signature, plus Solana's network fee. nothing is paid to heir.</p></details>
-  <details class="reveal"><summary>can the dev come back after it fires?</summary><p>no. the switch fires 72 hours after the last check-in, and it stays fired. check-ins after that are ignored.</p></details>
-  <details class="reveal"><summary>how do the fees reach the vault?</summary><p>pump.fun's fee sharing lets a creator name other wallets for their creator fees. point it at your coin's heir vault, or send fees there yourself. the app shows the vault and the SOL that has landed in it.</p></details>
-  <details class="reveal"><summary>when are heirs paid?</summary><p>anyone can press run payout on the coin's page, and heir sweeps every fired vault once a day. a payout runs when the vault holds at least ◎0.02.</p></details>
- </div>
-</div></section>
 </main>
-
-<footer><div class="wrap">
- <a class="logo" href="#top" style="font-size:18px">heir</a>
- <span>a dead dev switch for pump.fun coins. independent, not affiliated with pump.fun. not financial advice.</span>
- <span class="sp"><a href="/app">app</a><a href="/docs">docs</a><a href="#top">back to the top ↑</a></span>
-</div></footer>
+<footer class="gfoot gmono">
+ <span>SOL <b data-sol>—</b></span><span>coins on heir <b id="g-coins">—</b></span><span>switches fired <b id="g-fired" class="gold">—</b></span>
+ <span class="gr hide-sm" id="ghint">press <kbd>enter</kbd> · <kbd>/</kbd> terminal</span>
+</footer>
 <script src="/assets/js/core.js"></script>
-<script src="/assets/js/home.js"></script>
+<script src="/assets/js/gate.js"></script>
 </body>
 </html>
