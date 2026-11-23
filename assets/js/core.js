@@ -66,7 +66,7 @@ H.cmd("add", "add your coin", function(){ location.href = "/app#add"; return "op
 H.cmd("app", "open the app", function(){ location.href = "/app"; return "opening the app…"; });
 H.cmd("docs", "read the manual", function(){ location.href = "/docs"; return "opening the docs…"; });
 H.cmd("connect", "connect your wallet", function(){ return H.connect(false).then(function(w){ return w ? "connected <b>" + H.short(w) + "</b>" : "no wallet connected"; }); });
-H.cmd("goto", "goto <section>", function(a){ var t = a[0] && document.getElementById(a[0]); if (!t) { if (location.pathname !== "/") { location.href = "/#" + (a[0] || ""); return "…"; } throw new Error("sections: " + $$("section[id]").map(function(s){ return s.id; }).join(", ")); } t.scrollIntoView({ behavior: H.RM ? "auto" : "smooth" }); return "→ " + a[0]; });
+H.cmd("goto", "goto <section>", function(a){ var t = a[0] && document.getElementById(a[0]); if (!t) { if (location.pathname !== "/home") { location.href = "/home#" + (a[0] || ""); return "…"; } throw new Error("sections: " + $$("section[id]").map(function(s){ return s.id; }).join(", ")); } t.scrollIntoView({ behavior: H.RM ? "auto" : "smooth" }); return "→ " + a[0]; });
 H.cmd("about", "what heir is", function(){ return "heir is a dead dev switch for pump.fun coins.\nthe dev checks in every 72h with one signature.\nmiss one and the creator fees pass to the top 50 holders, forever.\nno token needed. the chain is the database."; });
 // wire a terminal window
 H.term = function(root){
