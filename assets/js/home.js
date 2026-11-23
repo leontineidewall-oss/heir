@@ -100,7 +100,7 @@ function calc(){ var vv = Math.pow(10, -1 + 3 * $("#c-v").value / 1000), b = $("
   $("#c-vv").textContent = H.sol(vv, vv >= 10 ? 1 : 2); $("#c-bv").textContent = b.toFixed(2) + "%"; $("#c-tv").textContent = tp + "%";
   $("#c-out").innerHTML = cut.toFixed(4) + "<small>SOL</small>"; $("#c-p1").textContent = (share * 100).toFixed(2) + "%"; $("#c-p2").textContent = b.toFixed(2) + "%";
   $("#c-b1").style.width = Math.min(100, share * 100) + "%"; $("#c-b2").style.width = Math.min(100, b) + "%";
-  $("#c-note").innerHTML = cut < .001 ? "under <b>◎0.001</b>, so this cut drops this round and its share goes to the rest." : "payable = vault − ◎0.001 kept for rent. your cut = payable × <b>your bag ÷ what the top 50 hold</b>."; }
+  $("#c-note").innerHTML = cut < .001 ? "under <b>0.001 SOL</b>: drops this round." : "(vault − 0.001) × <b>your bag ÷ top 50</b>"; }
 ["#c-v", "#c-b", "#c-t"].forEach(function(s){ var e = $(s); if (e) e.addEventListener("input", calc); }); if ($("#c-v")) calc();
 /* ---------- tape ---------- */
 var tape = $("#tape"); if (tape) { var one = ["check in every <b>72h</b>", "one signature", "miss one, the switch fires", "fees pass to the <b>top 50</b>", "split by bag", "forever", "no token needed", "the chain is the database", "type <b>/</b> for the terminal"].map(function(x){ return "<span>" + x + "</span><span>·</span>"; }).join(""); tape.innerHTML = one + one; }
@@ -115,6 +115,28 @@ function loadCoins(){ H.api("coins").then(function(j){ if (j.error) { $("#coinli
   COINS = (j.coins || []).sort(function(a, b){ return (a.state === b.state ? 0 : a.state === "fired" ? -1 : 1) || b.registered - a.registered; });
   $("#s-coins").textContent = j.live ? j.counts.coins : "—"; $("#s-alive").textContent = j.live ? j.counts.alive : "—"; $("#s-fired").textContent = j.live ? j.counts.fired : "—"; paintCoins(); }); }
 setInterval(function(){ $$("[data-dl]").forEach(function(e){ var d = +e.getAttribute("data-dl"); if (d) e.textContent = H.left(d - Date.now()); }); }, 1000);
-H.config().then(function(c){ var ta = $("#tagaddr"); if (ta) ta.innerHTML = c.tag ? "<a href=\"" + H.scan("account", c.tag) + "\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--g)\">" + c.tag + "</a>" : "set when heir goes live"; loadCoins(); });
+H.config().then(function(c){ var ta = $("#tagaddr"); if (ta) ta.innerHTML = c.tag ? "<a href=\"" + H.scan("account", c.tag) + "\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--g)\">" + H.short(c.tag) + "</a>" : "—"; loadCoins(); });
 setInterval(loadCoins, 60000);
+})();
+
+/* the flatline statement: scroll drives the pulse down to a gold line */
+(function(){ var H = window.HEIR, $ = H.$; var sec = $(".stmt"), cv = $("#stcv"); if (!sec || !cv) return;
+  var sp = [].slice.call(document.querySelectorAll("#sth span")), vis = false, P = 0, off = 0, last = performance.now(), red = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function beat(x){ x = ((x % 1) + 1) % 1; var y = 0; y += .14 * Math.exp(-Math.pow((x - .18) / .03, 2)); y -= .12 * Math.exp(-Math.pow((x - .30) / .012, 2)); y += 1 * Math.exp(-Math.pow((x - .33) / .012, 2)); y -= .28 * Math.exp(-Math.pow((x - .36) / .012, 2)); y += .22 * Math.exp(-Math.pow((x - .55) / .05, 2)); return y; }
+  function prog(){ var r = sec.getBoundingClientRect(), span = sec.offsetHeight - innerHeight; P = Math.max(0, Math.min(1, -r.top / Math.max(1, span))); }
+  function draw(now){ if (!vis) return; requestAnimationFrame(draw); var dt = Math.min(50, now - last); last = now; prog();
+    sp[0].classList.toggle("on", P > .04 || red); sp[1].classList.toggle("on", P > .3 || red); sp[2].classList.toggle("on", P > .62 || red);
+    var d = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if (cv.width !== w * d || cv.height !== h * d) { cv.width = w * d; cv.height = h * d; }
+    var c = cv.getContext("2d"); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, w, h);
+    var amp = Math.max(0, 1 - P / .6), fired = P >= .6, by = h * .8, A = Math.min(110, h * .14), pw = Math.max(260, w / 3.2);
+    off += dt * .00018 * (red ? 0 : 1);
+    c.lineWidth = 2; c.lineJoin = "round"; c.beginPath();
+    for (var x = 0; x <= w; x += 2) { var y = by - beat(x / pw - off) * A * amp; x ? c.lineTo(x, y) : c.moveTo(x, y); }
+    var g = c.createLinearGradient(0, 0, w, 0); if (fired) { g.addColorStop(0, "rgba(232,193,90,.15)"); g.addColorStop(.5, "rgba(232,193,90,.9)"); g.addColorStop(1, "rgba(232,193,90,.15)"); } else { g.addColorStop(0, "rgba(243,237,224,.05)"); g.addColorStop(.7, "rgba(243,237,224," + (.25 + .5 * amp) + ")"); g.addColorStop(1, "rgba(243,237,224,.05)"); }
+    c.strokeStyle = g; c.shadowColor = fired ? "#e8c15a" : "rgba(243,237,224,.6)"; c.shadowBlur = fired ? 18 : 8; c.stroke(); c.shadowBlur = 0;
+    if (fired) { var k = Math.min(1, (P - .6) / .3), t = now / 1000; for (var i = 0; i < 26; i++) { var px = ((i / 26 + t * .05) % 1) * w; c.fillStyle = "rgba(246,215,126," + (.25 + .6 * k * Math.abs(Math.sin(i * 1.7 + t))) + ")"; c.beginPath(); c.arc(px, by, 1.6 + k * 1.2, 0, 7); c.fill(); } }
+    var hrs = P / .6 * 72; c.font = "700 11px MO, monospace"; c.textAlign = "left"; c.fillStyle = fired ? "#e8c15a" : "#7d776a";
+    c.fillText(fired ? "SWITCH FIRED · HOLDERS INHERIT" : "LAST CHECK-IN " + Math.floor(hrs) + "H AGO · SWITCH IN " + H.left((72 - hrs) * 3600e3), Math.max(18, (w - Math.min(w, 1180)) / 2 + 24), by + 40); }
+  if ("IntersectionObserver" in window) new IntersectionObserver(function(es){ var v = es[0].isIntersecting; if (v && !vis) { vis = true; last = performance.now(); requestAnimationFrame(draw); } vis = v; }).observe(sec);
+  else { vis = true; requestAnimationFrame(draw); }
 })();
