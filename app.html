@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>heir · app</title>
+<meta name="description" content="the heir board: every coin on the dead dev switch, its pulse, its vault and its heirs.">
+<meta property="og:title" content="heir · the board">
+<meta property="og:image" content="https://heirsol.vercel.app/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#09090a">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/hd7.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="/assets/css/heir.css">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body class="appbody">
+<div class="grid-bg" aria-hidden="true"></div>
+<nav class="top solid"><div class="wrap">
+ <a class="logo" href="/"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#e8c15a"/><path d="M12 34h11l2.4 3.6 3.2-19 4 25.4 2.8-10H52" fill="none" stroke="#3f2d06" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg>heir</a>
+ <div class="tabs"><a href="#board" data-tab="board">board</a><a href="#add" data-tab="add">add a coin</a><a href="/docs">docs</a></div>
+ <div class="navr" style="display:flex;gap:8px;align-items:center;margin-left:auto"><span class="pill hide-sm"><i class="dot"></i>SOL <b data-sol style="color:var(--t)">—</b></span><button class="btn gold sm" data-connect>connect</button></div>
+</div></nav>
+<main class="app wrap" id="view" aria-live="polite"></main>
+<footer><div class="wrap">
+ <a class="logo" href="/" style="font-size:18px">heir</a>
+ <span>a dead dev switch for pump.fun coins. independent, not affiliated with pump.fun. not financial advice.</span>
+ <span class="sp"><a href="/">home</a><a href="/docs">docs</a></span>
+</div></footer>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

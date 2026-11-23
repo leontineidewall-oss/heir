@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>heir · docs</title>
+<meta name="description" content="HEIR(7): the dead dev switch, line by line. the protocol, the rules, the vault and the api.">
+<meta property="og:title" content="heir · docs">
+<meta property="og:image" content="https://heirsol.vercel.app/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#09090a">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/heir.css">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body class="appbody">
+<div class="grid-bg" aria-hidden="true"></div>
+<nav class="top solid"><div class="wrap">
+ <a class="logo" href="/"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#e8c15a"/><path d="M12 34h11l2.4 3.6 3.2-19 4 25.4 2.8-10H52" fill="none" stroke="#3f2d06" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg>heir</a>
+ <div class="tabs"><a href="/app#board">board</a><a href="/app#add">add a coin</a><a href="/docs" class="on">docs</a></div>
+ <div class="navr" style="display:flex;gap:8px;align-items:center;margin-left:auto"><a class="btn gold sm" href="/app">open the app</a></div>
+</div></nav>
+<main class="app wrap">
+ <div class="head"><div><div class="eyebrow">docs</div><h1>HEIR(7)</h1><p>the dead dev switch, line by line.</p></div><span class="pill">man heir</span></div>
+ <div class="docs">
+  <div class="win toc" id="toc">
+   <a href="#what"><span>01</span>what heir is</a><a href="#protocol"><span>02</span>the protocol</a><a href="#notes"><span>03</span>the notes</a><a href="#switch"><span>04</span>the switch</a><a href="#vault"><span>05</span>the vault</a><a href="#heirs"><span>06</span>the heirs</a><a href="#payouts"><span>07</span>payouts</a><a href="#fees"><span>08</span>routing the fees</a><a href="#safety"><span>09</span>safety</a><a href="#api"><span>10</span>public api</a><a href="#verify"><span>11</span>check it yourself</a>
+  </div>
+  <div class="win"><div class="bar"><i></i><i></i><i></i><span style="margin-left:14px">HEIR(7)</span><span class="r">the manual</span></div><div class="man">
+   <h2 id="what">what heir is</h2>
+   <p>heir is a <b>dead dev switch</b> for pump.fun coins. a dev adds their coin and checks in <b>once every 72 hours</b> with one signature. while they do, the coin's creator fees reach them as normal. if 72 hours pass with no check-in, the switch fires and the fees pass to the coin's <b>top 50 holders</b>, split by bag, forever.</p>
+   <p>heir has no token and no program of its own. it's notes on Solana, a vault per coin, and the code in this repo.</p>
+   <h2 id="protocol">the protocol</h2>
+<pre>  DEV                 HEIR                  SOLANA               HOLDERS
+   │                    │                      │                     │
+   │── register ───────▶│ reads the creator    │                     │
+   │                    │ from the bonding ───▶│                     │
+   │                    │ curve                │                     │
+   │◀── vault address ──│                      │                     │
+   │── route fees to the vault ───────────────▶│                     │
+   │── sign <b>heir:1:register</b> ──────────────────▶│                     │
+   │                    │                      │                     │
+   │   every ≤ 72h:     │                      │                     │
+   │── sign <b>heir:1:checkin</b> ───────────────────▶│                     │
+   │◀── vault pays the dev ────────────────────│                     │
+   │                    │                      │                     │
+   ×   72h, no check-in │                      │                     │
+                        │── <b>switch fires</b> ──────▶│                     │
+                        │── vault pays by bag ─────────────────────▶│ top 50
+                        │   (on demand + daily, forever)             │</pre>
+   <h2 id="notes">the notes</h2>
+   <p>registering and checking in are one transaction each, signed by the dev wallet. each carries two instructions: a <b>0-SOL transfer</b> to the heir tag address, so the note is easy to index, and a <b>memo</b>:</p>
+<pre><b>heir:1:register:&lt;mint&gt;</b>   adds the coin. only counts if the signer is the coin's creator
+<b>heir:1:checkin:&lt;mint&gt;</b>    resets the 72h timer. only counts if the signer is the dev</pre>
+   <p>the cost is one signature plus Solana's network fee. nothing is paid to heir. the first register for a mint wins; later ones are ignored.</p>
+   <h2 id="switch">the switch</h2>
+   <ol><li>the register note is the first beat. every check-in from the dev wallet is another beat.</li><li>if the gap between two beats, or between the last beat and now, is <b>over 72 hours</b>, the switch fires at the last beat + 72h.</li><li>a fired switch never resets. check-ins after it are ignored.</li><li>check-ins signed by any other wallet are ignored.</li></ol>
+   <h2 id="vault">the vault</h2>
+   <p>each coin has its own vault address. its key is derived on heir's server from one secret and the coin's mint, so nothing is stored and nothing leaves the server. the code moves a vault's SOL to exactly two places:</p>
+   <ol><li><b>while alive:</b> the dev wallet, when anyone presses pay or after a check-in. it keeps ◎0.001 for rent and runs at ◎0.01 or more.</li><li><b>after it fires:</b> the top 50 holders, by bag. it runs at ◎0.02 or more.</li></ol>
+   <h2 id="heirs">the heirs</h2>
+   <p>at every payout heir reads every token account of the mint from the chain and adds them up by owner. then it drops:</p>
+   <ol><li>owners that are <b>off the ed25519 curve</b>: program accounts, pools, the bonding curve</li><li>the dev wallet</li><li>the vault</li></ol>
+   <p>the 50 biggest bags left are the heirs. each one's share is its bag ÷ the 50 bags together.</p>
+   <h2 id="payouts">payouts</h2>
+<pre>payable  = vault − ◎0.001 rent − ◎0.000005 × transactions
+your cut = payable × your bag ÷ the top 50 bags
+cuts under ◎0.001 drop, and their share goes back to the rest
+up to 18 transfers per transaction, signed by the vault</pre>
+   <p>anyone can press <b>run payout</b> on a fired coin's page. heir also sweeps every fired vault once a day. every payout shows in the coin's ledger with its transaction.</p>
+   <h2 id="fees">routing the fees</h2>
+   <p>pump.fun pays creator fees to the coin's creator. its fee sharing lets the creator name other wallets for those fees. to put a coin on the switch, point its creator fees at the coin's heir vault (the app shows it), or send fees there yourself. heir can't see pump.fun's settings, so the coin page shows what it can prove: the SOL that has landed in the vault.</p>
+   <h2 id="safety">safety</h2>
+   <ol><li>the vault keys never leave the server and no page can see them.</li><li>no payout takes an address from a request. recipients come from the chain: the dev from the coin's bonding curve, the heirs from the token accounts.</li><li>one payout per coin at a time.</li><li>the registry is public. anyone can rebuild it from the tag address.</li></ol>
+   <h2 id="api">public api</h2>
+<pre>GET  /api/heir?action=config                 tag address, rules, SOL price
+GET  /api/heir?action=coins                  every coin and its state
+GET  /api/heir?action=coin&amp;mint=…            one coin: beats, vault, heirs, ledger
+GET  /api/heir?action=verify&amp;mint=…&amp;wallet=…  is this wallet the creator?
+GET  /api/heir?action=tx&amp;kind=…&amp;mint=…&amp;wallet=…  an unsigned register/checkin note
+POST /api/heir?action=pay&amp;mint=…             pay the vault out by the rules</pre>
+   <h2 id="verify">check it yourself</h2>
+   <p>open the tag address on Solscan: <span id="dtag" class="mono gold">—</span>. every coin and every check-in is there, in order. every vault's moves are on its own page. the code is in the repo.</p>
+  </div></div>
+ </div>
+</main>
+<footer><div class="wrap"><a class="logo" href="/" style="font-size:18px">heir</a><span>a dead dev switch for pump.fun coins. independent, not affiliated with pump.fun. not financial advice.</span><span class="sp"><a href="/">home</a><a href="/app">app</a></span></div></footer>
+<script src="/assets/js/core.js"></script>
+<script>HEIR.config().then(function(c){ var e = document.getElementById("dtag"); if (e && c.tag) e.innerHTML = "<a href=\"https://solscan.io/account/" + c.tag + "\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--g)\">" + c.tag + "</a>"; });</script>
+</body>
+</html>
